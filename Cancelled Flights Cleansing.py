@@ -178,7 +178,6 @@ final_df['CRS_ARR_DATE'] = pd.to_datetime(final_df['CRS_ARR_DATE'])
 final_df['Weekday'] = final_df['CRS_ARR_DATE'].dt.dayofweek # Add weekday variable
 final_df.to_csv('final_data_cancelled.csv')
 
-# WN only dataset
 final_df_WN = final_df[final_df['Marketing_Airline_Network']=='WN']
 final_df_WN.to_csv('final_data_cancelled_WN.csv')
 
