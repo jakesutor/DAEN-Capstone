@@ -16,12 +16,7 @@ data = pd.read_csv('final_data.csv')
 # Load in cancelled data
 cancelled_data = pd.read_csv('final_data_cancelled.csv')
 cancelled_data.columns
-##########################################################################
-################# Make each cancelled flight equal 15 min delay ##########
-##########################################################################
-cancelled_data['ArrDelayCANCELLED'] = cancelled_data['ArrDelayCANCELLED']*15
 
-cancelled_data['DepDelayCANCELLED'] = cancelled_data['DepDelayCANCELLED']*15
 
 
 # Merge datasets
