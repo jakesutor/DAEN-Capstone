@@ -86,3 +86,36 @@ dateClus=cbind.data.frame(eleven$ACT_ARR_DATE,elevenCluster$cluster)
 dateClus
 
 write.csv(dateClus,"ClustersByDate.csv")
+
+#######################################################
+set.seed(71)
+
+
+elevenCluster2 <- kmeans(elevenADs, 4, nstart = 20)
+elevenCluster2
+
+Clusters2 <- as.factor(elevenCluster2$cluster)
+
+cluslab <- levels(Clusters)
+cluslab = c("2", "1", "3")
+
+cluslab2 <- factor(elevenCluster$cluster, levels = c("2", "4", "3", "1"))
+
+
+cols2 <- c("1" = "red", "2" = "green", "3" = "blue", "4" = "magenta")
+
+
+ggplot(eleven, aes(noon$ArrDelayMinutes, eleven$ArrDelayMinutes , color = Clusters2)) + geom_point() +
+  ggtitle("Southwest Airlines Cumulative Delays (in Minutes) \nNoon vs. Eleven PM")+theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Cumulative Delay at Noon") +
+  ylab("Cumulative Delay at 11:00 pm")+
+  # scale_colour_discrete(name  ="Severity",
+  #                       breaks=c("2", "1", "3"),
+  #                       labels=c("Good", "Medium", "Meltdown"))+
+  scale_colour_manual(values = cols2, breaks=c("2", "4", "3", "1"),labels=c("Good", "Normal", "Bad","Meltdown"))
+
+dateClus2=cbind.data.frame(eleven$ACT_ARR_DATE,elevenCluster2$cluster)
+dateClus2
+tail(dateClus2)
+
+write.csv(dateClus2,"ClustersByDate_4.csv")
