@@ -14,32 +14,32 @@ from sklearn.cluster import KMeans
 os.chdir(r'C:\Users\jakes\Downloads')
 
 # Load in data
-data = pd.read_csv('combined_final_data_WN.csv')
-data.head()
+data = pd.read_csv('updated_final_data_WN.csv')
+data.head(20)
 
-df = data[['ACT_ARR_DATE','ACT_ARR_HOUR','ArrDelayMinutes','DepDelayMinutes','Weekday']]
+df = data[['Date','Hour','ArrDelay3AM','DepDelay3AM','Weekday']]
 df.head()
 
-df = (df.set_index(['ACT_ARR_DATE','ACT_ARR_HOUR'])
-        .rename_axis('ArrDelayMinutes', axis=1)
+df = (df.set_index(['Date','Hour'])
+        .rename_axis('ArrDelay3AM', axis=1)
         .stack()
         .unstack(1)
         .reset_index()
         .rename_axis(None, axis=1))
-df_new = df[df['ArrDelayMinutes']=='ArrDelayMinutes']
-df_new = df_new.drop(columns=['ArrDelayMinutes'], axis=1)
+df_new = df[df['ArrDelay3AM']=='ArrDelay3AM']
+df_new = df_new.drop(columns=['ArrDelay3AM'], axis=1)
 df_new.head()
 
 # Create variable for the day of the week
-df_new['ACT_ARR_DATE'] = pd.to_datetime(df_new['ACT_ARR_DATE'])
-df_new['Weekday'] = df_new['ACT_ARR_DATE'].dt.dayofweek
-cols = [0, 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+df_new['Date'] = pd.to_datetime(df_new['Date'])
+df_new['Weekday'] = df_new['Date'].dt.dayofweek
+cols = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 
-df_new[2] = df_new[2].fillna(df_new[1])
-df_new[3] = df_new[3].fillna(df_new[2])
-df_new[4] = df_new[4].fillna(df_new[3])
-df_new[5] = df_new[5].fillna(df_new[4])
-df_new[6] = df_new[6].fillna(df_new[5])
+df_new[0] = df_new[0].fillna(0)
+for i in range(1,24):
+    df_new[i] = df_new[i].fillna(df_new[(i-1)])
+    i = i + 1
+df_new.head()
 df_new.isna().sum()
 
 
@@ -51,9 +51,9 @@ from sklearn.cluster import KMeans
 
 
   
-df = DataFrame(df_new,columns=[12,23])
+df = DataFrame(df_new,columns=[9,23])
 df = df.reset_index()
-df = df[[12,23]]  
+df = df[[9,23]]  
 kmeans = KMeans(n_clusters=3).fit(df)
 centroids = kmeans.cluster_centers_
 print(centroids)
@@ -63,13 +63,13 @@ cluster = pd.DataFrame(c)
 cluster[0] = cluster[0].astype(int)
 
 df = df.join(cluster)
-df.columns = ['Noon Delays','EOD Delays', 'Classification']
+df.columns = ['Noon Delays','EOD (3AM EST) Delays', 'Classification']
 
-plt.scatter(df['Noon Delays'], df['EOD Delays'], c= c, s=50, alpha=0.5)
-plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
-plt.title("Southwest Airlines Cumulative Delays (in Minutes) \nNoon vs. Eleven PM")
+plt.scatter(df['Noon Delays'],df['EOD (3AM EST) Delays'], c= c, s=50, alpha=0.5)
+plt.scatter(centroids[:, 0],centroids[:, 1], c='red', s=50)
+plt.title("Southwest Airlines Cumulative Delays (in Minutes) \nNoon vs. 3AM EST")
 plt.xlabel("Cumulative Delay at Noon")
-plt.ylabel("Cumulative Delay at 11:00pm")
+plt.ylabel("Cumulative Delay at 3AM EST")
 plt.show()
 
 from sklearn.model_selection import train_test_split
@@ -102,7 +102,5 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 print(confusion_matrix(y_test, y_pred))
 print(classification_report(y_test, y_pred))
-
-
 
 

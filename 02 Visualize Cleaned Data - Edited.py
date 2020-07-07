@@ -19,13 +19,12 @@ act_dep.drop(act_dep[act_dep['ACT_DEP_DATE'] == '2020-03-01'].index, inplace=Tru
 act_arr.drop(act_arr[act_arr['ACT_ARR_DATE'] == '2017-12-31'].index, inplace=True)
 act_arr.drop(act_arr[act_arr['ACT_ARR_DATE'] == '2020-03-01'].index, inplace=True)
 
+act_dep.head()
+act_arr.head()
 
 dep_delay = act_dep.groupby(['Marketing_Airline_Network','ACT_DEP_DATE','ACT_DEP_HOUR'])['DepDelayMinutes'].sum().unstack(2).stack()  # ARR_DELAY_NEW is arrival delays that are positive
 arr_delay = act_arr.groupby(['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR'])['ArrDelayMinutes'].sum().unstack(2).stack()  # ARR_DELAY_NEW is arrival delays that are positive
 
-# cumulative delays by airline, date, and hour
-dep_delay = act_dep.groupby(['Marketing_Airline_Network','ACT_DEP_DATE','ACT_DEP_HOUR'])['DepDelayMinutes'].sum().unstack(2).stack().groupby(level=[0,1]).cumsum()  # ARR_DELAY_NEW is arrival delays that are positive
-arr_delay = act_arr.groupby(['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR'])['ArrDelayMinutes'].sum().unstack(2).stack().groupby(level=[0,1]).cumsum()  # ARR_DELAY_NEW is arrival delays that are positive
 
 # sort based on date and hour:
 dep_delay = dep_delay.sort_index(level=(0,1))
@@ -40,22 +39,43 @@ final_df = final_df[['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR','
 
 # Rename columns
 final_df.columns = ['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR','ArrDelayMinutes','DepDelayMinutes']
+final_df = final_df.fillna(0)
+
+# cumulative delays by airline, date, and hour
+cumulative_dep_delay = act_dep.groupby(['Marketing_Airline_Network','ACT_DEP_DATE','ACT_DEP_HOUR'])['DepDelayMinutes'].sum().unstack(2).stack().groupby(level=[0,1]).cumsum()  # ARR_DELAY_NEW is arrival delays that are positive
+cumulative_arr_delay = act_arr.groupby(['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR'])['ArrDelayMinutes'].sum().unstack(2).stack().groupby(level=[0,1]).cumsum()  # ARR_DELAY_NEW is arrival delays that are positive
+
+# sort based on date and hour:
+cumulative_dep_delay = cumulative_dep_delay.sort_index(level=(0,1))
+cumulative_arr_delay = cumulative_arr_delay.sort_index(level=(0,1))
+cumulative_dep_delay = cumulative_dep_delay.reset_index()
+cumulative_arr_delay = cumulative_arr_delay.reset_index()
+
+# Merge the arrival and departure delays datasets using a "LEFT JOIN"
+cumulative_final_df = pd.merge(cumulative_arr_delay, cumulative_dep_delay,  how='left', left_on=['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR'], right_on = ['Marketing_Airline_Network','ACT_DEP_DATE','ACT_DEP_HOUR'])
+cumulative_final_df = cumulative_final_df[['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR','0_x','0_y']]
+
+# Rename columns
+cumulative_final_df.columns = ['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR','CumulativeArrDelayMinutes','CumulativeDepDelayMinutes']
 
 # For any NAs, fill in with the previous value if the criteria match
-final_df = final_df.fillna(method='ffill')
+cumulative_final_df = cumulative_final_df.fillna(method='ffill')
+
+final_df_2 = pd.merge(final_df, cumulative_final_df,  how='left', left_on=['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR'], right_on = ['Marketing_Airline_Network','ACT_ARR_DATE','ACT_ARR_HOUR'])
+final_df_2.columns
 
 # Change data type to datetime
-final_df['ACT_ARR_DATE'] = pd.to_datetime(final_df['ACT_ARR_DATE'])
+final_df_2['ACT_ARR_DATE'] = pd.to_datetime(final_df_2['ACT_ARR_DATE'])
 
 # Create variable for the day of the week
-final_df['Weekday'] = final_df['ACT_ARR_DATE'].dt.dayofweek
+final_df_2['Weekday'] = final_df_2['ACT_ARR_DATE'].dt.dayofweek
 
 # Create new csv with final data
-final_df.to_csv('final_data.csv')
+final_df_2.to_csv('daily_&_cumulative_final_data.csv')
 
 # Create new csv with WN data
-final_df_WN = final_df[final_df['Marketing_Airline_Network']=='WN']
-final_df_WN.to_csv('final_data_WN.csv')
+final_df_WN = final_df_2[final_df_2['Marketing_Airline_Network']=='WN']
+final_df_WN.to_csv('daily_&_cumulative_final_data_WN.csv')
 
 
 ############## Previous Group's Visualizations ##########################
