@@ -16,6 +16,8 @@ import os
 import pandas as pd
 import holidays
 import datetime as dt
+from datetime import timedelta  
+
 #%matplotlib qt
 #%matplotlib inline
 os.chdir(r'C:\Users\jakes\Downloads')
@@ -63,7 +65,7 @@ for i in range(0,dates.shape[0]):
 df['holiday'] = holiday
 
 df = df[df['Date'] != '2018-03-11']
-df = df[df['Date'] != '2019-03-10']
+#df = df[df['Date'] != '2019-03-10']
 
 
 # don't change the seed so that we can compare the results with each other
@@ -153,6 +155,7 @@ def plot_train_history(history, title):
 
   plt.show()
 
+#multivariate_data(dataset, target, start_index, end_index, history_size,target_size, step, single_step=False)
 #preparing the dataset
 x_train_multi, y_train_multi = multivariate_data(dataset, dataset[:, 0], 0,
                                                  TRAIN_SPLIT, past_history,
@@ -228,18 +231,127 @@ val_data_multi = tf.data.Dataset.from_tensor_slices((x_val_multi, y_val_multi))
 val_data_multi = val_data_multi.batch(1)
 
 #plotting the sample predictions
-for x, y in val_data_multi.take(1):
+for x, y in val_data_multi.take(10):
   multi_step_plot(x[0], y[0], multi_step_model.predict(x)[0])
 
+pred_data=pd.DataFrame([])
+est_date = dt.date(2018, 12, 31)
+
+for x, y in val_data_multi.take(365):
+    true_val = y[:,15]*data_std[0]+data_mean[0]
+    prediction = np.array(multi_step_model.predict(x)[:,15]*data_std[0]+data_mean[0])
+    pred_data = pred_data.append(pd.DataFrame({'Date':est_date,'True Value':true_val,'Predicted Value':prediction}, index=[0]),ignore_index=True)
+    est_date = est_date + timedelta(days=1) 
+pred_data['Predicted Value'] = round(pred_data['Predicted Value'])
+
+print(pred_data)
+
+
+plt.figure(figsize=(12,8))
+meltdown = plt.scatter(pred_data[pred_data['True Value']>=80000]['True Value'],pred_data[pred_data['True Value']>=80000]['Predicted Value'],color='blue')
+normal = plt.scatter(pred_data[pred_data['True Value']<80000]['True Value'],pred_data[pred_data['True Value']<80000]['Predicted Value'],color='gray')
+plt.axhline(y=80000, color='r', linestyle='-')
+plt.legend((meltdown,normal),
+           ('Meltdown', 'Normal'),
+           scatterpoints=1,
+           loc='top left',
+           ncol=1,
+           fontsize=12)
+plt.title('LSTM Predictions',fontsize=16)
+plt.xlabel('True Values',fontsize=14)
+plt.ylabel('Predicted Values',fontsize=14)
+plt.ylim(ymin=0)  
+plt.xlim(xmin=0) 
+plt.show()
+
+
+labels = pd.read_csv('testing_cumulative_data_WN_labeled_equalized.csv')
+labels['Date'] = pd.to_datetime(labels['Date'])
+
+cluster = pred_data.copy()
+cluster['Predicted Cluster'] = ''
+cluster['True Cluster'] = ''
+
+cluster['True Cluster']=cluster['Date'].map(dict(zip(labels['Date'],labels['Cluster'])))
+cluster['True Value'].groupby(cluster['True Cluster']).describe()
+
+cluster.loc[cluster['Predicted Value']<=24333,'Predicted Cluster']='Great'
+cluster.loc[cluster['Predicted Value']>24333,'Predicted Cluster']='Good'
+cluster.loc[cluster['Predicted Value']>38890,'Predicted Cluster']='Normal'
+cluster.loc[cluster['Predicted Value']>55396,'Predicted Cluster']='Bad'
+cluster.loc[cluster['Predicted Value']>78910,'Predicted Cluster']='Meltdown'
 
 
 
 
+import itertools
+#Define the function used to create a Confusion Matrix plot
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+y_test = cluster['True Cluster']
+y_pred = cluster['Predicted Cluster']
+
+from sklearn import metrics
+# Model Accuracy, how often is the classifier correct?
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
 
 
+#Compute confusion matrix
+cnf_matrix = confusion_matrix(y_test, y_pred)
+np.set_printoptions(precision=2)
 
+#Create labels that correspond with our respective cluster labels
+labsWN=['Great', 'Good','Normal','Bad','Meltdown']
 
+#Plot non-normalized confusion matrix to show counts of predicted vs. actual clusters
+plt.figure()
+plot_confusion_matrix(cnf_matrix, classes=labsWN,
+                      title='Confusion matrix, without normalization')
 
+#Plot normalized confusion matrix to show percentage of classifications in predicted vs. actual clusters
+plt.figure()
+plt.figure(figsize=(11,7))
+plot_confusion_matrix(cnf_matrix, classes=labsWN, normalize=True,
+                      title='Southwest Airlines Classified LSTM Model \nNormalized Confusion Matrix')
+
+plt.show()
 
 
 
