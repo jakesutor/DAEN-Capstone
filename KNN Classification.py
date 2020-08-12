@@ -105,13 +105,17 @@ df_total_new_2.to_csv('final_final_data.csv')
 #######################################
 ###### START HERE MOVING FORWARD ######
 
-df = pd.read_csv('testing_cumulative_data_WN_labeled_equalized.csv')
+df = pd.read_csv('testing_cumulative_data.csv')
 from pandas import DataFrame
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
-df = df[df['Marketing_Airline_Network']=="WN"]
-df = df[df['Delay Type']=='ArrDelay3AM']
+airline = 'AA'
+
+df_airline = df[df['Marketing_Airline_Network']==airline]
+df_airline = df_airline[df_airline['Delay Type']=='ArrDelay3AM']
+df_airline = df_airline.reset_index()
+df = df_airline[['8','23']]
 
 cols = ['0','1','2','3','4','5','6','7','8','23']
 df[cols] = df[cols].astype(int)
@@ -121,7 +125,7 @@ df = DataFrame(df,columns=cols)
 df = df.reset_index()
 df.head()
 df = df[cols]
-#df = df[[9,23]]  
+#df = df[['8','23']]  
 kmeans = KMeans(n_clusters=5).fit(df)
 centroids = kmeans.cluster_centers_
 print(centroids)
@@ -129,6 +133,23 @@ c= kmeans.labels_.astype(float)
 
 cluster = pd.DataFrame(c)
 cluster[0] = cluster[0].astype(int)
+df_airline = df_airline.join(cluster)
+df_airline.columns = ['ind','ind2','Marketing_Airline_Network','Date','Delay Type',0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,'Weekday','Classification']
+df_airline = df_airline[['Marketing_Airline_Network','Date','Delay Type',0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,'Weekday','Classification']]
+
+df_airline.groupby(['Classification'])[23].describe()
+df_airline['Cluster'] = ''
+df_airline['Cluster_Num']=0
+df_airline.loc[df_airline['Classification']==3,'Cluster'] = 'Great'
+df_airline.loc[df_airline['Classification']==1,'Cluster'] = 'Good'
+df_airline.loc[df_airline['Classification']==0,'Cluster'] = 'Normal'
+df_airline.loc[df_airline['Classification']==4,'Cluster'] = 'Bad'
+df_airline.loc[df_airline['Classification']==2,'Cluster'] = 'Meltdown'
+df_airline.loc[df_airline['Cluster']=='Great','Cluster_Num'] = 0
+df_airline.loc[df_airline['Cluster']=='Good','Cluster_Num'] = 1
+df_airline.loc[df_airline['Cluster']=='Normal','Cluster_Num'] = 2
+df_airline.loc[df_airline['Cluster']=='Bad','Cluster_Num'] = 3
+df_airline.loc[df_airline['Cluster']=='Meltdown','Cluster_Num'] = 4
 
 df = df.join(cluster)
 df.columns = [0,1,2,3,4,5,6,7,8,'EOD (3AM EST) Delays', 'Classification']
