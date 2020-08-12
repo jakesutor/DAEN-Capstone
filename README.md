@@ -15,19 +15,20 @@ We added January-February 2020 data to their datasets. All raw data can be found
 
 3.) 
 
-#### Data Transformation
+#### Visualizations
 
+#### Initial Analysis
 
 #### Algorithms
 
-1.) LSTM
+1.) LSTM - includes both GridSearch version and version without GridSearch
 
 2.) XGBoost
 
-3.) SVM
+3.) SVM - includes a separate file for creating the confusion matrices to match the format of the confusion matrices of the LSTM and XGBoost models
 
 
-#### Data
+#### Data Files
 
 
 
