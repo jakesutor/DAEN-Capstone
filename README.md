@@ -7,11 +7,13 @@ Within each airline, air traffic managers and airline dispatchers have the autho
 ### Contents
 #### Data Cleansing
 Initial iteration of cleansing code provided by Spring Semester GMU DAEN 690 group. Please see their initial project and code at https://github.com/teamatash/CATSR-Flight-Prediction-BTS.
-We added January-February 2020 data to their datasets. All raw data can be found at https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=237.
+We added January-February 2020 data to their datasets. All raw data can be found at https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=237. Refer to the 'Download raw data explanation' file for details regarding which variables were utilized.
 
-1.) 
+Once the files have been downloaded, first utilize the files within the 'Data Cleansing' folder to prepare and combine the data. Run files according to the order of their number.
 
-2.) 
+1.) Merge Data
+
+2.) Clean Data - three individual files
 
 3.) 
 
@@ -25,7 +27,7 @@ We added January-February 2020 data to their datasets. All raw data can be found
 
 2.) XGBoost
 
-3.) SVM - includes a separate file for creating the confusion matrices to match the format of the confusion matrices of the LSTM and XGBoost models
+3.) SVM - includes a separate file for creating the confusion matrices to match the format of the confusion matrices of the LSTM and XGBoost models; also includes separate files for each airline
 
 
 #### Data Files
