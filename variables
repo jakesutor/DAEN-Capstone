@@ -1,5 +1,10 @@
-Variables used in cleaning code:
+To download the initial datasets required:
+1.) Navigate to https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=237
+2.) Each month has to be downloaded individually, so select desired months (our analysis used January 2018- February 2020)
+3.) For each month, select the following variables to be downloaded:
 
 ORIGIN_CITY_NAME, DEST_CITY_NAME, CRS_DEP_TIME, FL_DATE, ORIGIN_CITY_TIMEZONE, 
 DEP_TIME, DEP_DELAY_NEW, CRS_ARR_TIME, ARR_TIME, TAXI_IN, TAXI_OUT, WHEELS_ON, 
 WHEELS_OFF, DEST, ORIGIN, MKT_UNIQUE_CARRIER, ARR_DELAY_NEW
+
+4.) We named each file YYYY_M and saved as CSV (e.g. January 2018 was 2018_1.csv)
