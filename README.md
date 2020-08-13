@@ -11,15 +11,27 @@ We added January-February 2020 data to their datasets. All raw data can be found
 
 Once the files have been downloaded, first utilize the files within the 'Data Cleansing' folder to prepare and combine the data. Run files according to the order of their number.
 
-1.) Merge Data
+1.) Merge Data - first, Merge Data file (removes all cancelled flights as part of the cleansing), then Cancelled Flights Imputation
 
-2.) Clean Data - three individual files
+2.) Clean Data - three individual files for cleaning data
 
-3.) 
+3.) Calculate Cumulative Delays - calculates cumulative delays at each hour
+
+4.) Calculate Cancelled Flights Cumulative Delays - calculates cumulative delays at each hour for cancelled flights
+
+5.) Combining cancelled and delayed flights - needed in order to combine the cancelled flights and other flights
+
+6.) Set 3AM as last hour of the day - rather than having midnight as the beginning of the day, set 3AM as our target time
 
 #### Visualizations
 
+Creates histograms and time series for each airline
+
 #### Initial Analysis
+
+1.) KNN Classification - used to label data for further analysis
+
+2.) Regression attempt - testing linear regression analysis
 
 #### Algorithms
 
