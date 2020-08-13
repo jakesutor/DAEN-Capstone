@@ -7,4 +7,4 @@ ORIGIN_CITY_NAME, DEST_CITY_NAME, CRS_DEP_TIME, FL_DATE, ORIGIN_CITY_TIMEZONE,
 DEP_TIME, DEP_DELAY_NEW, CRS_ARR_TIME, ARR_TIME, TAXI_IN, TAXI_OUT, WHEELS_ON, 
 WHEELS_OFF, DEST, ORIGIN, MKT_UNIQUE_CARRIER, ARR_DELAY_NEW
 
-4.) We named each file YYYY_M and saved as CSV (e.g. January 2018 was 2018_1.csv)
+4.) To run these files through the cleansing code, either name each file YYYY_M (e.g. January 2018 was 2018_1.csv) or adjust code where it reads in the files.
